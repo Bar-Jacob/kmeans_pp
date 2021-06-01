@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import sys
 import random
-#import mykmeanssp
+# import mykmeanssp
 
 
 k = sys.argv[1]
@@ -31,22 +31,30 @@ except IndexError:
 
 k = int(sys.argv[1])
 
+f1 = open(input1, 'r')
+f2 = open(input2, 'r')
+len_f1 = len(f1.readline().split(","))
+len_f2 = len(f2.readline().split(","))
+f1.close
+f2.close
 
-points1 = pd.read_csv(input1)
-points2 = pd.read_csv(input2)
-points1.columns = ['c1', 'c2', 'c3']
-points2.columns = ['c1', 'c2', 'c3']
-merged_points = pd.merge(points1, points2, on='c1')
-merged_points = merged_points.set_index("c1")
-merged_points = merged_points.sort_index(ascending=True)
-print(merged_points)
+points1 = pd.read_csv(input1, names=["c" + str(i) for i in range(len_f1)])
+points2 = pd.read_csv(input2, names=["c" + str(i) for i in range(len_f2)])
+
+points1 = pd.DataFrame(points1)
+points2 = pd.DataFrame(points2)
+
+merged_points = points1.merge(points2, on='c0')
+
+merged_points = merged_points.sort_values(by=["c0"])
+
 
 centroids = [0.0 for i in range(k)]
 distances = [0.0 for i in range(len(merged_points))]
 probabilities = [0.0 for i in range(len(merged_points))]
 
-merged_points = merged_points.values.tolist()
-random_index = random.randint(0, 97)
+merged_points = merged_points.set_index('c0')
+merged_points_numpy = merged_points.to_numpy()
 
 
 def probabilities_calc():
@@ -59,12 +67,12 @@ def probabilities_calc():
 
 def min_distances(Z):
     cnt = 0
-    for vector in merged_points:
+    for vector in merged_points_numpy:
         min = -1
         for i in range(Z):
-            sum = 0.0
-            for xi in range(len(vector)):
-                sum += pow((vector[xi]-centroids[i][xi]), 2)
+            print("vec-cenr", vector-centroids[i])
+            sum = pow(np.linalg.norm(vector-centroids[i]), 2)
+            print("sum", sum)
             if(sum < min or min == -1):
                 min = sum
         distances[cnt] = min
@@ -73,17 +81,20 @@ def min_distances(Z):
 
 def KMeansPP():
     Z = 1
-    centroids[0] = merged_points[random_index]
+    np.random.seed(0)
+    random_index = int(np.random.choice(merged_points.index))
+    centroids[0] = merged_points_numpy[random_index]
     while(Z != k):
         min_distances(Z)
         probabilities_calc()
-        random_vector = random.choices(merged_points, probabilities)
-        centroids[Z] = random_vector[0]
+        random_index = int(np.random.choice(
+            merged_points.index, p=probabilities))
+        centroids[Z] = merged_points_numpy[random_index]
         Z = Z + 1
 
 
 KMeansPP()
 print(centroids)
-print(merged_points.index(centroids[0]))
-
-#print(mykmeanssp.hello(1, 3.2))
+print(np.where(merged_points_numpy == centroids[0]))
+print(np.where(merged_points_numpy == centroids[1]))
+print(np.where(merged_points_numpy == centroids[2]))
