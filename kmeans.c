@@ -13,7 +13,7 @@ typedef struct Cluster
 } Cluster;
 
 static PyObject *fit(PyObject *self, PyObject *args);
-static int kmeans(int k, int max_iter, Py_ssize_t dimension_p, Py_ssize_t num_of_points_p, PyObject centroids_locations, PyObject data_points_p);
+static int kmeans(int k, int max_iter, Py_ssize_t dimension_p, Py_ssize_t num_of_points_p, PyObject* centroids_locations, PyObject* data_points_p);
 double Euclidian_Distance(double *vector1, double *vector2, int dimension);
 void finding_cluster(double *vector, Cluster *clusters, int k, int dimension);
 int update_mean(Cluster *clusters, int same_average, int k, int dimension);
@@ -45,7 +45,7 @@ static PyObject *fit(PyObject *self, PyObject *args)
     }
     n = PyList_Size(data_points_p);
     num_of_points_p = n/dimension_p;
-    kmeans(k, max_iter, dimension_p, num_of_points_p, centroids_locations, data_points_p)
+    kmeans(k, max_iter, dimension_p, num_of_points_p, centroids_locations, data_points_p);
     return PY_BuildValue(1);
 }
 
@@ -75,7 +75,7 @@ PyInit_mykmeanssp(void)
     return m;
 }
 
-static int kmeans(int k, int max_iter, Py_ssize_t dimension_p, Py_ssize_t num_of_points_p, PyObject centroids_locations, PyObject data_points_p)
+static int kmeans(int k, int max_iter, Py_ssize_t dimension_p, Py_ssize_t num_of_points_p, PyObject* centroids_locations, PyObject* data_points_p)
 {
     Cluster *clusters;
     double **data_points;
