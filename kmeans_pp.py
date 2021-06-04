@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import sys
 import random
-# import mykmeanssp
+import mykmeanssp
 
 
 k = sys.argv[1]
@@ -70,9 +70,7 @@ def min_distances(Z):
     for vector in merged_points_numpy:
         min = -1
         for i in range(Z):
-            print("vec-cenr", vector-centroids[i])
             sum = pow(np.linalg.norm(vector-centroids[i]), 2)
-            print("sum", sum)
             if(sum < min or min == -1):
                 min = sum
         distances[cnt] = min
@@ -92,9 +90,18 @@ def KMeansPP():
         centroids[Z] = merged_points_numpy[random_index]
         Z = Z + 1
 
-
 KMeansPP()
-print(centroids)
-print(np.where(merged_points_numpy == centroids[0]))
-print(np.where(merged_points_numpy == centroids[1]))
-print(np.where(merged_points_numpy == centroids[2]))
+#setting an argument for C
+dimension = len(centroids[0])
+#creating a 1D list of the data points to give as an argument to C
+data_points_p = []
+for vector in merged_points_numpy:
+    for i in range(dimension):
+        data_points_p.append(vector[i])
+
+#creating a list of the locations of the centorinds in the merged_points_numpy list 
+centroids_locations = [0 for i in range(k)] 
+for i in range(k):
+    centroids_locations[i] = (int)(np.where(merged_points_numpy == centroids[i])[0][0])
+
+mykmeanssp.fit(k, max_iter, dimension, centroids_locations, data_points_p)

@@ -12,7 +12,8 @@ typedef struct Cluster
     double *centroid;
 } Cluster;
 
-static PyObject *kmeans_capi(PyObject *self, PyObject *args);
+static PyObject *fit(PyObject *self, PyObject *args);
+static int kmeans(int k, int max_iter, Py_ssize_t dimension_p, Py_ssize_t num_of_points_p, PyObject centroids_locations, PyObject data_points_p);
 double Euclidian_Distance(double *vector1, double *vector2, int dimension);
 void finding_cluster(double *vector, Cluster *clusters, int k, int dimension);
 int update_mean(Cluster *clusters, int same_average, int k, int dimension);
@@ -25,23 +26,32 @@ void free_memory(Cluster *clusters, double **data_points, int k, int num_of_poin
     return z;
 }*/
 
-static PyObject *kmeans_capi(PyObject *self, PyObject *args)
+static PyObject *fit(PyObject *self, PyObject *args)
 {
     int k;
     int max_iter;
-    PyObject **centroids_p;
-    PyObject **data_points_p;
+    Py_ssize_t dimension_p;
+    Py_ssize_t num_of_points_p;
+    Py_ssize_t n;
+    PyObject *centroids_locations;
+    PyObject *data_points_p;
 
-    if (!PyArg_ParseTuple(args, "iiO!O!", &k, &max_iter, &centroids_p, &data_points_p))
+    if (!PyArg_ParseTuple(args, "iiO!O!O!", &k, &max_iter, &dimension_p, &centroids_locations, &data_points_p))
     {
         return NULL;
     }
-    return PY_BuildValue("d", kmeans(k, max_iter, centroids_p, data_points_p));
+    if(!PYList_Check(centroids_locations) || !PYList_Check(data_points_p)){
+        return NULL;
+    }
+    n = PyList_Size(data_points_p);
+    num_of_points_p = n/dimension_p;
+    kmeans(k, max_iter, dimension_p, num_of_points_p, centroids_locations, data_points_p)
+    return PY_BuildValue(1);
 }
 
 static PyMethodDef kmeansMethods[] = {
     {"kmeans",
-     (PyCFunction)hello_capi,
+     (PyCFunction)fit,
      METH_VARARGS,
      PyDoc_STR("kmeans algorithem")},
     {NULL, NULL, 0, NULL}};
@@ -65,61 +75,56 @@ PyInit_mykmeanssp(void)
     return m;
 }
 
-int main(int argc, char *argv[])
+static int kmeans(int k, int max_iter, Py_ssize_t dimension_p, Py_ssize_t num_of_points_p, PyObject centroids_locations, PyObject data_points_p)
 {
-    char c;
-    double value;
-    int num_of_points = 0;
-    int dimension = 1;
-
-    int max_iter = 0;
-    int k = 0;
     Cluster *clusters;
     double **data_points;
     int same_average = 0;
     int cnt = 0;
     int i = 0;
     int j = 0;
+    Py_ssize_t p = 0;
+    Py_ssize_t q = 0;
+    Py_ssize_t cnt_p = 0;
+    int num_of_points = 0;
+    int dimension = 0;
 
-    /* finding number of points and dimension from the input */
 
-    /*assert(num_of_points >= k);
-    initialize num of points and dimension*/
+    num_of_points = (int)num_of_points_p;
+    dimension = (int)dimension_p;
 
-    data_points = (double **)calloc(num_of_points, sizeof(*data_points));
+    data_points = (double **)calloc(num_of_points_p, sizeof(*data_points));
     assert(data_points != NULL);
 
-    for (i = 0; i < num_of_points; i++)
+    for (p = 0; p < num_of_points_p; p++)
     {
-        data_points[i] = (double *)calloc(dimension, sizeof(*data_points[i]));
-        assert(data_points[i] != NULL);
-    }
-
-    for (i = 0; i < num_of_points; i++)
-    {
-        for (j = 0; j < dimension; j++)
-        {
-            scanf("%lf%c", &value, &c);
-            data_points[i][j] = value;
+        for(q = 0; q < dimension_p; q++){
+            data_points[p] = (double *)calloc(dimension_p, sizeof(*data_points[p]));
+            assert(data_points[p] != NULL);
+            data_points[p][q] = (double)PyList_GetItem(data_points_p, cnt_p);
+            cnt_p++;
         }
     }
 
     /*
     Initializing k clusters
     */
+    cnt_p = 0;
     clusters = (Cluster *)calloc(k, sizeof(struct Cluster));
     for (i = 0; i < k; i++)
     {
-        clusters[i].centroid = (double *)calloc(dimension, sizeof(double));
+        clusters[i].centroid = (double *)calloc(dimension_p, sizeof(double));
         assert(clusters[i].centroid != NULL);
 
-        memcpy(clusters[i].centroid, data_points[i], sizeof(double) * dimension); /*will be equal to the i'th vector
+        memcpy(clusters[i].centroid, data_points[PyList_GetItem(centroids_locations,cnt_p)], sizeof(double) * dimension); /*will be equal to the i'th vector
         */
         clusters[i].num_of_points = 0;
-        clusters[i].sum_of_points = (double *)calloc(dimension, sizeof(double));
+        clusters[i].sum_of_points = (double *)calloc(dimension_p, sizeof(double));
         assert(clusters[i].sum_of_points != NULL);
+        cnt_p++;
     }
 
+    
     cnt = 0;
     while ((cnt < max_iter) && (!same_average))
     {
