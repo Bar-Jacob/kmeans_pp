@@ -4,9 +4,7 @@ import sys
 import random
 import mykmeanssp
 
-
 k = sys.argv[1]
-
 
 def argu_check(k, max_iter=200):
     if(('.' in k) or int(k) < 0):
@@ -20,6 +18,7 @@ def argu_check(k, max_iter=200):
 
 
 try:
+    check_num_of_args = sys.argv[4]
     max_iter = sys.argv[2]
     max_iter = argu_check(k, max_iter)
     input1 = sys.argv[3]
@@ -29,7 +28,7 @@ except IndexError:
     input1 = sys.argv[2]
     input2 = sys.argv[3]
 
-k = int(sys.argv[1])
+k = int(k)
 
 f1 = open(input1, 'r')
 f2 = open(input2, 'r')
@@ -93,6 +92,8 @@ def KMeansPP():
 KMeansPP()
 #setting an argument for C
 dimension = len(centroids[0])
+data_points_size = len(merged_points_numpy)
+
 #creating a 1D list of the data points to give as an argument to C
 data_points_p = []
 for vector in merged_points_numpy:
@@ -104,4 +105,8 @@ centroids_locations = [0 for i in range(k)]
 for i in range(k):
     centroids_locations[i] = (int)(np.where(merged_points_numpy == centroids[i])[0][0])
 
-mykmeanssp.fit(k, max_iter, dimension, centroids_locations, data_points_p)
+final_centroids = np.array(mykmeanssp.fit(k, max_iter, dimension, data_points_size, centroids_locations, data_points_p))
+
+print(*centroids_locations, sep=",")
+for centroid in final_centroids:
+    print(*[np.round(num, decimals=4) for num in centroid],sep=",")
