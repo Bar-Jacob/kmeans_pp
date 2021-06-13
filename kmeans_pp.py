@@ -2,15 +2,15 @@ import pandas as pd
 import numpy as np
 import sys
 import random
-import mykmeanssp
+#import mykmeanssp
 
 k = sys.argv[1]
 
-def argu_check(k, max_iter=200):
+def argu_check(k, max_iter=300): ###
     if(('.' in k) or int(k) < 0):
         print("Invalid Input")
         assert()
-    if(max_iter != 200):
+    if(max_iter != 300):
         if(('.' in max_iter) or int(max_iter) < 0):
             print("Invalid Input")
             assert()
@@ -44,50 +44,51 @@ points1 = pd.DataFrame(points1)
 points2 = pd.DataFrame(points2)
 
 merged_points = points1.merge(points2, on='c0')
-
 merged_points = merged_points.sort_values(by=["c0"])
 
-
-centroids = [0.0 for i in range(k)]
-distances = [0.0 for i in range(len(merged_points))]
+distances = [-1.0 for i in range(len(merged_points))]
 probabilities = [0.0 for i in range(len(merged_points))]
 
 merged_points = merged_points.set_index('c0')
 merged_points_numpy = merged_points.to_numpy()
 
+centroids = np.array([[0.0 for i in range(len(merged_points_numpy[0]))] for i in range(k)])
+#creating a list of the locations of the centorinds in the merged_points_numpy list 
+centroids_locations = [0 for i in range(k)] 
+
+if(k >= len(merged_points_numpy)):
+    print("There are more clusters than points")
+    assert()
 
 def probabilities_calc():
     sum = 0.0
     for distance in distances:
-        sum = sum + distance
+        sum += distance
     for i in range(len(distances)):
         probabilities[i] = distances[i]/sum
 
-
 def min_distances(Z):
-    cnt = 0
-    for vector in merged_points_numpy:
-        min = -1
-        for i in range(Z):
-            sum = pow(np.linalg.norm(vector-centroids[i]), 2)
-            if(sum < min or min == -1):
-                min = sum
-        distances[cnt] = min
-        cnt += 1
-
+    for index in range(len(merged_points_numpy)):
+        curr_distance = pow(np.linalg.norm((merged_points_numpy[index]-centroids[Z-1])), 2) 
+        if(curr_distance < distances[index] or distances[index] == -1.0):
+            distances[index] = curr_distance
 
 def KMeansPP():
-    Z = 1
+    cnt = 1
     np.random.seed(0)
-    random_index = int(np.random.choice(merged_points.index))
-    centroids[0] = merged_points_numpy[random_index]
-    while(Z != k):
+
+    random_index = (int)(np.random.choice(merged_points.index))
+    centroids_locations[0] = random_index
+    centroids[0] = np.ndarray.copy(merged_points_numpy[random_index])
+    Z = 1
+    while(Z != k): 
         min_distances(Z)
         probabilities_calc()
-        random_index = int(np.random.choice(
-            merged_points.index, p=probabilities))
-        centroids[Z] = merged_points_numpy[random_index]
-        Z = Z + 1
+        random_index = (int)(np.random.choice(merged_points.index, p=probabilities))
+        centroids_locations[cnt] = random_index
+        centroids[Z] = np.ndarray.copy(merged_points_numpy[random_index])
+        Z += 1
+        cnt += 1
 
 KMeansPP()
 #setting an argument for C
@@ -99,11 +100,6 @@ data_points_p = []
 for vector in merged_points_numpy:
     for i in range(dimension):
         data_points_p.append(vector[i])
-
-#creating a list of the locations of the centorinds in the merged_points_numpy list 
-centroids_locations = [0 for i in range(k)] 
-for i in range(k):
-    centroids_locations[i] = (int)(np.where(merged_points_numpy == centroids[i])[0][0])
 
 final_centroids = np.array(mykmeanssp.fit(k, max_iter, dimension, data_points_size, centroids_locations, data_points_p))
 
