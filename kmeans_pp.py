@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import sys
 import random
-#import mykmeanssp
+import mykmeanssp
 
 k = sys.argv[1]
 
