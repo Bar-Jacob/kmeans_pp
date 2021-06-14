@@ -30,6 +30,9 @@ except IndexError:
     input2 = sys.argv[3]
 
 k = int(k)
+if(k == 0):
+    print("invalid input")
+    assert()
 
 f1 = open(input1, 'r')
 f2 = open(input2, 'r')
