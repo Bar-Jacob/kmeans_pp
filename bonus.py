@@ -1,8 +1,9 @@
-from matplotlib.text import Annotation
 from sklearn import datasets
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 import numpy as np
+import matplotlib as mpl
+mpl.use('agg')
 
 
 data_set = datasets.load_iris()
