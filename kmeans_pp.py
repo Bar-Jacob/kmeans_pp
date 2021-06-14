@@ -8,7 +8,7 @@ k = sys.argv[1]
 
 
 def argu_check(k, max_iter=300):
-    if(('.' in k) or int(k) < 0):
+    if(('.' in k) or int(k) <= 0):
         print("Invalid Input")
         assert()
     if(max_iter != 300):
@@ -30,9 +30,7 @@ except IndexError:
     input2 = sys.argv[3]
 
 k = int(k)
-if(k == 0):
-    print("invalid input")
-    assert()
+
 
 f1 = open(input1, 'r')
 f2 = open(input2, 'r')

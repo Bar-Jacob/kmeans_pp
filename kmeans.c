@@ -38,12 +38,12 @@ static PyObject *kmeans(int k, int max_iter, int dimension_p, int num_of_points_
     int dimension = dimension_p;
 
     data_points = (double **)calloc(num_of_points, sizeof(*data_points));
-    assert(data_points != NULL);
+    assert(data_points != NULL && "error in allocating memory");
 
     for (i = 0; i < num_of_points; i++)
     {
         data_points[i] = (double *)calloc(dimension, sizeof(*data_points[i]));
-        assert(data_points[i] != NULL);
+        assert(data_points[i] != NULL && "error in allocating memory");
         for (j = 0; j < dimension; j++)
         {
             data_points[i][j] = PyFloat_AsDouble(PyList_GetItem(data_points_p, cnt));
@@ -56,17 +56,17 @@ static PyObject *kmeans(int k, int max_iter, int dimension_p, int num_of_points_
     */
     cnt = 0;
     clusters = (Cluster *)calloc(k, sizeof(struct Cluster));
-    assert(clusters != NULL);
+    assert(clusters != NULL && "error in allocating memory");
     for (i = 0; i < k; i++)
     {
         clusters[i].centroid = (double *)calloc(dimension, sizeof(double));
-        assert(clusters[i].centroid != NULL);
+        assert(clusters[i].centroid != NULL && "error in allocating memory");
 
         memcpy(clusters[i].centroid, data_points[PyLong_AsLong(PyList_GetItem(centroids_locations, cnt))], sizeof(double) * dimension); /*will be equal to the i'th vector
         */
         clusters[i].num_of_points = 0;
         clusters[i].sum_of_points = (double *)calloc(dimension, sizeof(double));
-        assert(clusters[i].sum_of_points != NULL);
+        assert(clusters[i].sum_of_points != NULL && "error in allocating memory");
         cnt++;
     }
 
