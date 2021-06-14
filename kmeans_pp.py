@@ -12,7 +12,7 @@ def argu_check(k, max_iter=300):
         print("Invalid Input")
         assert()
     if(max_iter != 300):
-        if(('.' in max_iter) or int(max_iter) < 0):
+        if(('.' in max_iter) or int(max_iter) <= 0):
             print("Invalid Input")
             assert()
     return int(max_iter)
@@ -49,6 +49,10 @@ points2 = pd.DataFrame(points2)
 #merge according to the first colum
 merged_points = points1.merge(points2, on='c0')
 merged_points = merged_points.sort_values(by=["c0"])
+
+if (merged_points.empty or len(merged_points.columns) == 0):
+    print("Empty data")
+    assert()
 
 distances = [-1.0 for i in range(len(merged_points))]
 probabilities = [0.0 for i in range(len(merged_points))]
