@@ -13,19 +13,20 @@ typedef struct Cluster
 } Cluster;
 
 static PyObject *fit_capi(PyObject *self, PyObject *args);
-static PyObject* kmeans(int k, int max_iter, int dimension_p, int num_of_points_p, PyObject* centroids_locations, PyObject* data_points_p);
+static PyObject *kmeans(int k, int max_iter, int dimension_p, int num_of_points_p, PyObject *centroids_locations, PyObject *data_points_p);
 double Euclidian_Distance(double *vector1, double *vector2, int dimension);
 void finding_cluster(double *vector, Cluster *clusters, int k, int dimension);
 int update_mean(Cluster *clusters, int same_average, int k, int dimension);
 void update_sum_of_elements_in_cluster(double *vector, int loc, Cluster *clusters, int dimension);
 void free_memory(Cluster *clusters, double **data_points, int k, int num_of_points);
-PyObject* cToPyObject(Cluster* clusters, int k, int dimension, double **data_points, int num_of_points);
+PyObject *cToPyObject(Cluster *clusters, int k, int dimension, double **data_points, int num_of_points);
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     return 0;
 }
 
-static PyObject* kmeans(int k, int max_iter, int dimension_p, int num_of_points_p, PyObject* centroids_locations, PyObject* data_points_p)
+static PyObject *kmeans(int k, int max_iter, int dimension_p, int num_of_points_p, PyObject *centroids_locations, PyObject *data_points_p)
 {
     Cluster *clusters;
     double **data_points;
@@ -43,7 +44,8 @@ static PyObject* kmeans(int k, int max_iter, int dimension_p, int num_of_points_
     {
         data_points[i] = (double *)calloc(dimension, sizeof(*data_points[i]));
         assert(data_points[i] != NULL);
-        for(j = 0; j < dimension; j++){
+        for (j = 0; j < dimension; j++)
+        {
             data_points[i][j] = PyFloat_AsDouble(PyList_GetItem(data_points_p, cnt));
             cnt++;
         }
@@ -60,7 +62,7 @@ static PyObject* kmeans(int k, int max_iter, int dimension_p, int num_of_points_
         clusters[i].centroid = (double *)calloc(dimension, sizeof(double));
         assert(clusters[i].centroid != NULL);
 
-        memcpy(clusters[i].centroid, data_points[PyLong_AsLong(PyList_GetItem(centroids_locations,cnt))], sizeof(double) * dimension); /*will be equal to the i'th vector
+        memcpy(clusters[i].centroid, data_points[PyLong_AsLong(PyList_GetItem(centroids_locations, cnt))], sizeof(double) * dimension); /*will be equal to the i'th vector
         */
         clusters[i].num_of_points = 0;
         clusters[i].sum_of_points = (double *)calloc(dimension, sizeof(double));
@@ -94,23 +96,6 @@ static PyObject* kmeans(int k, int max_iter, int dimension_p, int num_of_points_
         cnt++;
     }
 
-/*
-    for (i = 0; i < k; i++)
-    {
-        for (j = 0; j < dimension; j++)
-        {
-            if (j == dimension - 1)
-            {
-                printf("%.4f", clusters[i].centroid[j]);
-            }
-            else
-            {
-                printf("%.4f,", clusters[i].centroid[j]);
-            }
-        }
-        printf("\n");
-    }
-*/
     return cToPyObject(clusters, k, dimension, data_points, num_of_points);
 }
 
@@ -173,17 +158,20 @@ double Euclidian_Distance(double *vector1, double *centroid, int dimension)
     return sum;
 }
 
-PyObject* cToPyObject(Cluster* clusters, int k, int dimension, double **data_points, int num_of_points){
-    PyObject* clusters_py;
+PyObject *cToPyObject(Cluster *clusters, int k, int dimension, double **data_points, int num_of_points)
+{
+    PyObject *clusters_py;
     int i = 0;
     int j = 0;
-    PyObject* value;
+    PyObject *value;
 
     clusters_py = PyList_New(k);
-    for(i = 0; i < k; i++){
-        PyObject* curr_vector;
+    for (i = 0; i < k; i++)
+    {
+        PyObject *curr_vector;
         curr_vector = PyList_New(dimension);
-        for(j = 0; j < dimension; j++){
+        for (j = 0; j < dimension; j++)
+        {
             value = Py_BuildValue("d", clusters[i].centroid[j]);
             PyList_SetItem(curr_vector, j, value);
         }
@@ -214,7 +202,6 @@ void free_memory(Cluster *clusters, double **data_points, int k, int num_of_poin
     free(clusters);
 }
 
-
 static PyObject *fit_capi(PyObject *self, PyObject *args)
 {
     int k;
@@ -228,7 +215,8 @@ static PyObject *fit_capi(PyObject *self, PyObject *args)
     {
         return NULL;
     }
-    if(!PyList_Check(centroids_locations) || !PyList_Check(data_points_p)){
+    if (!PyList_Check(centroids_locations) || !PyList_Check(data_points_p))
+    {
         return NULL;
     }
 
@@ -237,11 +225,10 @@ static PyObject *fit_capi(PyObject *self, PyObject *args)
 
 static PyMethodDef kmeansMethods[] = {
     {"fit",
-     (PyCFunction) fit_capi,
+     (PyCFunction)fit_capi,
      METH_VARARGS,
      PyDoc_STR("kmeans algorithem")},
-    {NULL, NULL, 0, NULL}
-};
+    {NULL, NULL, 0, NULL}};
 
 static struct PyModuleDef moduledef =
     {
@@ -249,8 +236,7 @@ static struct PyModuleDef moduledef =
         "mykmeanssp",
         NULL,
         -1,
-        kmeansMethods
-};
+        kmeansMethods};
 
 PyMODINIT_FUNC
 PyInit_mykmeanssp(void)
