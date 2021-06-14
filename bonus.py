@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib as mpl
 mpl.use('agg')
 
-
+# inspiration was taken from https://stackoverflow.com/questions/41540751/sklearn-kmeans-equivalent-of-elbow-method
 data_set = datasets.load_iris()
 data_frame = data_set.data
 
