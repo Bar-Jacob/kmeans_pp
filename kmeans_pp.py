@@ -6,7 +6,7 @@ import mykmeanssp
 
 k = sys.argv[1]
 
-
+#checking if k and max_iter are in the right format. doesn't accept decimal points (not even .0)
 def argu_check(k, max_iter=300):
     if(('.' in k) or int(k) <= 0):
         print("Invalid Input")
@@ -31,7 +31,7 @@ except IndexError:
 
 k = int(k)
 
-
+#reading the given files
 f1 = open(input1, 'r')
 f2 = open(input2, 'r')
 len_f1 = len(f1.readline().split(","))
@@ -39,12 +39,14 @@ len_f2 = len(f2.readline().split(","))
 f1.close
 f2.close
 
+#convert the files into dataframes + give the titles to the colums 
 points1 = pd.read_csv(input1, names=["c" + str(i) for i in range(len_f1)])
 points2 = pd.read_csv(input2, names=["c" + str(i) for i in range(len_f2)])
 
 points1 = pd.DataFrame(points1)
 points2 = pd.DataFrame(points2)
 
+#merge according to the first colum
 merged_points = points1.merge(points2, on='c0')
 merged_points = merged_points.sort_values(by=["c0"])
 
@@ -52,7 +54,7 @@ distances = [-1.0 for i in range(len(merged_points))]
 probabilities = [0.0 for i in range(len(merged_points))]
 
 merged_points = merged_points.set_index('c0')
-merged_points_numpy = merged_points.to_numpy()
+merged_points_numpy = merged_points.to_numpy() #convert to numpy array
 
 centroids = np.array(
     [[0.0 for i in range(len(merged_points_numpy[0]))] for i in range(k)])
@@ -63,7 +65,8 @@ if(k >= len(merged_points_numpy)):
     print("There are more clusters than points")
     assert()
 
-
+#calculating probabilities after calculating distances. 
+#the closer you are to one of the centroids, the lower your probability
 def probabilities_calc():
     sum = 0.0
     for distance in distances:
@@ -71,7 +74,8 @@ def probabilities_calc():
     for i in range(len(distances)):
         probabilities[i] = distances[i]/sum
 
-
+#calculating the minimum distance of each point from all current clusters 
+#by comparing the minimum distance from the last iteration to the distance from the new centroid
 def min_distances(Z):
     for index in range(len(merged_points_numpy)):
         curr_distance = pow(np.linalg.norm(
@@ -79,7 +83,7 @@ def min_distances(Z):
         if(curr_distance < distances[index] or distances[index] == -1.0):
             distances[index] = curr_distance
 
-
+#initializing the first k centroids
 def KMeansPP():
     cnt = 1
     np.random.seed(0)
@@ -110,6 +114,7 @@ for vector in merged_points_numpy:
     for i in range(dimension):
         data_points_p.append(vector[i])
 
+#using kmeanssp module by calling the fit function
 final_centroids = np.array(mykmeanssp.fit(
     k, max_iter, dimension, data_points_size, centroids_locations, data_points_p))
 

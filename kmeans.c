@@ -26,6 +26,9 @@ int main(int argc, char *argv[])
     return 0;
 }
 
+/*
+kmeans algorithm from HW1 without centroid's initialization
+*/
 static PyObject *kmeans(int k, int max_iter, int dimension_p, int num_of_points_p, PyObject *centroids_locations, PyObject *data_points_p)
 {
     Cluster *clusters;
@@ -37,6 +40,9 @@ static PyObject *kmeans(int k, int max_iter, int dimension_p, int num_of_points_
     int num_of_points = num_of_points_p;
     int dimension = dimension_p;
 
+    /*
+    converting all data points from python into data points in C
+    */
     data_points = (double **)calloc(num_of_points, sizeof(*data_points));
     assert(data_points != NULL && "error in allocating memory");
 
@@ -52,7 +58,7 @@ static PyObject *kmeans(int k, int max_iter, int dimension_p, int num_of_points_
     }
 
     /*
-    Initializing k clusters
+    converting k centroids from python to k centroids in C
     */
     cnt = 0;
     clusters = (Cluster *)calloc(k, sizeof(struct Cluster));
@@ -70,10 +76,13 @@ static PyObject *kmeans(int k, int max_iter, int dimension_p, int num_of_points_
         cnt++;
     }
 
+    /*
+    main loop, running kmeans algorithm max_iter times or untill there's no change
+    */
     cnt = 0;
     while ((cnt < max_iter) && (!same_average))
     {
-        same_average = 1;
+        same_average = 1; /*if there's a change in the centroids it will change to 0, else it will stay 1*/
         for (i = 0; i < num_of_points; i++)
         {
             finding_cluster(data_points[i], clusters, k, dimension);
@@ -99,6 +108,9 @@ static PyObject *kmeans(int k, int max_iter, int dimension_p, int num_of_points_
     return cToPyObject(clusters, k, dimension, data_points, num_of_points);
 }
 
+/*
+finding the closest cluster for the given vector 
+*/
 void finding_cluster(double *vector, Cluster *clusters, int k, int dimension)
 {
     double min_distance = -1.0;
@@ -119,6 +131,9 @@ void finding_cluster(double *vector, Cluster *clusters, int k, int dimension)
     update_sum_of_elements_in_cluster(vector, num_of_cluster, clusters, dimension);
 }
 
+/*
+adding data point to the sum of all data points that belongs to a specific cluster
+*/
 void update_sum_of_elements_in_cluster(double *vector, int loc, Cluster *clusters, int dimension)
 {
     int i = 0;
@@ -128,6 +143,9 @@ void update_sum_of_elements_in_cluster(double *vector, int loc, Cluster *cluster
     }
 }
 
+/*
+updating the centroid of a cluster
+*/
 int update_mean(Cluster *clusters, int same_average, int k, int dimension)
 {
     int i = 0;
@@ -158,6 +176,10 @@ double Euclidian_Distance(double *vector1, double *centroid, int dimension)
     return sum;
 }
 
+/*
+after finishing running kmeans algorithm we want to return the results to python 
+converting types from C to python
+*/
 PyObject *cToPyObject(Cluster *clusters, int k, int dimension, double **data_points, int num_of_points)
 {
     PyObject *clusters_py;
@@ -202,6 +224,9 @@ void free_memory(Cluster *clusters, double **data_points, int k, int num_of_poin
     free(clusters);
 }
 
+/*
+when calling fit() from python, this function is called. getting arguments from python and pass it to kmeans function
+*/
 static PyObject *fit_capi(PyObject *self, PyObject *args)
 {
     int k;
@@ -223,6 +248,9 @@ static PyObject *fit_capi(PyObject *self, PyObject *args)
     return Py_BuildValue("O", kmeans(k, max_iter, dimension_p, num_of_points_p, centroids_locations, data_points_p));
 }
 
+/*
+building mykmeanssp module...
+*/
 static PyMethodDef kmeansMethods[] = {
     {"fit",
      (PyCFunction)fit_capi,
